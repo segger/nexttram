@@ -23,12 +23,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import se.johannalynn.nexttram.ui.theme.NextTramTheme
 
-data class Departure(
-    val line: String,
-    val destination: String,
-    val next: String
-)
-
 @Composable
 fun TimetableScreenWrapper(
     uiState: TimetableUiState,
