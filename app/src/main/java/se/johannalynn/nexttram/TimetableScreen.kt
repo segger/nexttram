@@ -61,7 +61,7 @@ fun TimetableScreen(
         .padding(16.dp)) {
         // Screen Header
         Text(
-            text = "Axel Dahlströms torg",
+            text = "Axel Dahlströms torg ( C )",
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             modifier = Modifier

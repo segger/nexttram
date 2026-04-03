@@ -14,6 +14,8 @@ import io.ktor.http.parameters
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import java.time.Duration
+import java.time.ZonedDateTime
 
 @Serializable
 data class Departure(
@@ -29,6 +31,21 @@ data class TokenResponse(
     val token_type: String? = null,
     val expires_in: Int? = null
 )
+
+@Serializable
+data class DeparturesResponse(val results: List<ApiDeparture> = emptyList())
+
+@Serializable
+data class ApiDeparture(val serviceJourney: ServiceJourney, val stopPoint: StopPoint, val estimatedOtherwisePlannedTime: String)
+
+@Serializable
+data class StopPoint(val platform: String)
+
+@Serializable
+data class ServiceJourney(val direction: String, val line: Line)
+
+@Serializable
+data class Line(val shortName: String)
 
 class TimetableService {
 
@@ -74,16 +91,25 @@ class TimetableService {
     }
 
     suspend fun getDepartures(): List<Departure> {
-        println("getDeparatures");
-        val departures = client.get("$BASE_URL/stop-areas/${gid}/departures").body<String>()
-        println(departures)
+        val departures = client.get("$BASE_URL/stop-areas/${gid}/departures").body<DeparturesResponse>()
+        return departures.results.filter { departure -> departure.stopPoint.platform == "C" }
+            .map { apiDeparture ->
+                Departure(apiDeparture.serviceJourney.line.shortName,
+                    apiDeparture.serviceJourney.direction,
+                    departureTime(apiDeparture.estimatedOtherwisePlannedTime))
+        }
+    }
 
-        return listOf(
-            Departure("11", "Out of here", "Nu"),
-            Departure("7", "Tynnered", "3 min"),
-            Departure("11", "Saltholmen", "5 min"),
-            Departure("6", "Länsmansgården", "8 min"),
-            Departure("7", "Angered", "12 min")
-        )
+    private fun departureTime(departureTimestamp: String): String {
+        val departureTime = ZonedDateTime.parse(departureTimestamp)
+        val now = ZonedDateTime.now(departureTime.zone)
+
+        val duration = Duration.between(now, departureTime)
+        val minutes = duration.toMinutes()
+
+        return when {
+            minutes < 1 -> "Nu"
+            else -> "$minutes min"
+        }
     }
 }
