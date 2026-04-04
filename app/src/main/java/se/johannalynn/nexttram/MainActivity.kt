@@ -78,6 +78,7 @@ fun NextTramApp(
             when (currentDestination) {
                 AppDestinations.HOME -> TimetableScreenWrapper(
                     uiState = uiState,
+                    onRefresh = viewModel::fetchDepartures,
                     modifier = Modifier.padding(innerPadding)
                 )
                 AppDestinations.SETTINGS -> SettingsScreen(modifier = Modifier.padding(innerPadding))

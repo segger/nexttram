@@ -9,9 +9,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
+
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,6 +30,7 @@ import se.johannalynn.nexttram.ui.theme.NextTramTheme
 @Composable
 fun TimetableScreenWrapper(
     uiState: TimetableUiState,
+    onRefresh: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     when (uiState) {
@@ -44,6 +49,7 @@ fun TimetableScreenWrapper(
         is TimetableUiState.Success -> {
             TimetableScreen(
                 departures = uiState.departures,
+                onRefresh = onRefresh,
                 modifier = modifier
             )
         }
@@ -54,20 +60,29 @@ fun TimetableScreenWrapper(
 @Composable
 fun TimetableScreen(
     departures: List<Departure>,
+    onRefresh: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier
         .fillMaxSize()
         .padding(16.dp)) {
         // Screen Header
-        Text(
-            text = "Axel Dahlströms torg ( C )",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier
-                .padding(bottom = 16.dp)
-                .align(Alignment.CenterHorizontally)
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = "Axel Dahlströms torg ( C )",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier
+                    .padding(bottom = 16.dp)
+            )
+            IconButton(onClick = onRefresh, modifier = Modifier.padding(bottom = 16.dp)) {
+                Icon(Icons.Default.Refresh, contentDescription = "Refresh")
+            }
+        }
 
         // Table Header
         Row(
@@ -136,7 +151,8 @@ fun TimetableScreenPreview() {
                 Departure("11", "Saltholmen", "5 min"),
                 Departure("6", "Länsmansgården", "8 min"),
                 Departure("7", "Angered", "12 min")
-            )
+            ),
+            onRefresh = {}
         )
     }
 }
