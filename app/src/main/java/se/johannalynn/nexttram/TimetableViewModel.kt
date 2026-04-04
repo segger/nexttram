@@ -30,7 +30,7 @@ class TimetableViewModel : ViewModel() {
                 val result = service.getDepartures()
                 _uiState.value = TimetableUiState.Success(result)
             } catch (e: Exception) {
-                _uiState.value = TimetableUiState.Error("Filed to load: ${e.message}")
+                _uiState.value = TimetableUiState.Error("Failed to load: ${e.message}")
             }
         }
     }
