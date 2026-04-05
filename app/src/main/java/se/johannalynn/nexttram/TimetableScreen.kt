@@ -13,11 +13,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,6 +59,7 @@ fun TimetableScreenWrapper(
 }
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimetableScreen(
     departures: List<Departure>,
@@ -112,29 +115,33 @@ fun TimetableScreen(
         }
         HorizontalDivider()
 
-        // List
-        LazyColumn {
-            items(departures) { departure ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = departure.line,
-                        modifier = Modifier.weight(0.2f)
-                    )
-                    Text(
-                        text = departure.destination,
-                        modifier = Modifier.weight(0.6f)
-                    )
-                    Text(
-                        text = departure.next,
-                        modifier = Modifier.weight(0.2f)
-                    )
+        PullToRefreshBox(
+            isRefreshing = false,
+            onRefresh = onRefresh,
+        ) {
+            LazyColumn {
+                items(departures) { departure ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = departure.line,
+                            modifier = Modifier.weight(0.2f)
+                        )
+                        Text(
+                            text = departure.destination,
+                            modifier = Modifier.weight(0.6f)
+                        )
+                        Text(
+                            text = departure.next,
+                            modifier = Modifier.weight(0.2f)
+                        )
+                    }
+                    HorizontalDivider(modifier = Modifier.padding(start = 8.dp))
                 }
-                HorizontalDivider(modifier = Modifier.padding(start = 8.dp))
             }
         }
     }

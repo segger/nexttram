@@ -7,5 +7,6 @@ Add your `vasttrafik.clientId` and `vasttrafik.clientSecret` into `local.propert
 
 ### Other
 - [ ] Colors of trams
+- [ ] App icon
 - [ ] Settings/properties for station and platform
 - [ ] Dark mode
