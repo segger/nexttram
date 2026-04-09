@@ -10,3 +10,5 @@ Add your `vasttrafik.clientId` and `vasttrafik.clientSecret` into `local.propert
 - [ ] App icon
 - [ ] Change platform (and station)
 - [ ] Dark mode
+- [ ] Highlight
+- [ ] Keep screen alive
