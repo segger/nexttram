@@ -4,11 +4,15 @@ Add your `vasttrafik.clientId` and `vasttrafik.clientSecret` into `local.propert
 
 ### Todo
 - [x] Reload on demand
-
-### Other
-- [ ] Colors of trams
-- [ ] App icon
+- [x] Dark mode
 - [ ] Change platform (and station)
-- [ ] Dark mode
+- [ ] Colors of trams
+
+#### Wheather
+* api.met.no (YR)
+ 
+### Other
+- [ ] App icon
 - [ ] Highlight
 - [ ] Keep screen alive
+- [ ] Sign app
