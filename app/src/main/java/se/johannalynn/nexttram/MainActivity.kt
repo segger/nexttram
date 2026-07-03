@@ -19,7 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -34,9 +34,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            NextTramTheme {
-                NextTramApp()
-            }
+            NextTramApp()
         }
     }
 }
@@ -46,42 +44,49 @@ class MainActivity : ComponentActivity() {
 fun NextTramApp(
     viewModel: TimetableViewModel = viewModel()
 ) {
-    var currentDestination by rememberSaveable { mutableStateOf(AppDestinations.HOME) }
+    var currentDestination by remember { mutableStateOf(AppDestinations.HOME) }
+    var darkModeEnabled by remember { mutableStateOf(false) }
 
     val uiState by viewModel.uiState.collectAsState()
 
-    val navigationSuiteColors = NavigationSuiteDefaults.colors(
-        navigationBarContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-        navigationRailContainerColor = MaterialTheme.colorScheme.surfaceVariant
-    )
+    NextTramTheme(darkTheme = darkModeEnabled) {
+        val navigationSuiteColors = NavigationSuiteDefaults.colors(
+            navigationBarContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+            navigationRailContainerColor = MaterialTheme.colorScheme.surfaceVariant
+        )
 
-    NavigationSuiteScaffold(
-        navigationSuiteColors = navigationSuiteColors,
-        navigationSuiteItems = {
-            AppDestinations.entries.forEach {
-                item(
-                    modifier = Modifier.padding(8.dp),
-                    icon = {
-                        Icon(
-                            it.icon,
-                            contentDescription = it.label
-                        )
-                    },
-                    label = { Text(it.label) },
-                    selected = it == currentDestination,
-                    onClick = { currentDestination = it }
-                )
+        NavigationSuiteScaffold(
+            navigationSuiteColors = navigationSuiteColors,
+            navigationSuiteItems = {
+                AppDestinations.entries.forEach {
+                    item(
+                        modifier = Modifier.padding(8.dp),
+                        icon = {
+                            Icon(
+                                it.icon,
+                                contentDescription = it.label
+                            )
+                        },
+                        label = { Text(it.label) },
+                        selected = it == currentDestination,
+                        onClick = { currentDestination = it }
+                    )
+                }
             }
-        }
-    ) {
-        Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-            when (currentDestination) {
-                AppDestinations.HOME -> TimetableScreenWrapper(
-                    uiState = uiState,
-                    onRefresh = viewModel::fetchDepartures,
-                    modifier = Modifier.padding(innerPadding)
-                )
-                AppDestinations.SETTINGS -> SettingsScreen(modifier = Modifier.padding(innerPadding))
+        ) {
+            Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                when (currentDestination) {
+                    AppDestinations.HOME -> TimetableScreenWrapper(
+                        uiState = uiState,
+                        onRefresh = viewModel::fetchDepartures,
+                        modifier = Modifier.padding(innerPadding)
+                    )
+                    AppDestinations.SETTINGS -> SettingsScreen(
+                        darkModeEnabled = darkModeEnabled,
+                        onDarkModeChanged = { darkModeEnabled = it },
+                        modifier = Modifier.padding(innerPadding)
+                    )
+                }
             }
         }
     }
