@@ -71,67 +71,63 @@ fun TimetableScreen(
     lastUpdated: String,
     modifier: Modifier = Modifier
 ) {
-    Column(modifier = modifier
-        .fillMaxSize()
-        .padding(16.dp)) {
-        // Screen Header
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Text(
-                text = "Axel Dahlströms torg ( C )",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
+    PullToRefreshBox(
+        isRefreshing = false,
+        onRefresh = onRefresh,
+        modifier = modifier.fillMaxSize()
+    ) {
+        Column(modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)) {
+            // Screen Header
+            Box(
                 modifier = Modifier
+                    .fillMaxWidth()
                     .padding(bottom = 16.dp)
-            )
-            /*
-            IconButton(onClick = onRefresh, modifier = Modifier.padding(bottom = 16.dp)) {
-                Icon(Icons.Default.Refresh, contentDescription = "Refresh")
-            } */
-            Text(
-                text = lastUpdated,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Light,
-                modifier = Modifier.padding(bottom = 16.dp, start = 16.dp)
-            )
-        }
+            ) {
+                Text(
+                    text = "Axel Dahlströms torg ( C )",
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.align(Alignment.Center)
+                )
+                Text(
+                    text = lastUpdated,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Light,
+                    modifier = Modifier.align(Alignment.CenterEnd).padding(end = 16.dp)
+                )
+            }
 
-        // Table Header
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                text = "Linje",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.weight(0.2f)
-            )
-            Text(
-                text = "Destination",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.weight(0.6f)
-            )
-            Text(
-                text = "Nästa",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.weight(0.2f)
-            )
-        }
-        HorizontalDivider()
+            // Table Header
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "Linje",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(0.2f)
+                )
+                Text(
+                    text = "Destination",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(0.6f)
+                )
+                Text(
+                    text = "Nästa",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(0.2f)
+                )
+            }
+            HorizontalDivider()
 
-        PullToRefreshBox(
-            isRefreshing = false,
-            onRefresh = onRefresh,
-        ) {
-            LazyColumn {
+            LazyColumn(modifier = Modifier.fillMaxSize()) {
                 items(departures) { departure ->
                     Row(
                         modifier = Modifier
