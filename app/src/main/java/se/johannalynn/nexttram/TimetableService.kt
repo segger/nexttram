@@ -15,6 +15,7 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.time.Duration
+import java.time.Instant
 import java.time.ZonedDateTime
 
 @Serializable
@@ -58,6 +59,14 @@ class TimetableService {
     private val CLIENT_ID = BuildConfig.CLIENT_ID
     private val CLIENT_SECRET = BuildConfig.CLIENT_SECRET
 
+    private var cachedTokens: BearerTokens? = null
+    private var cachedTokensExpiresAt: Instant = Instant.EPOCH
+
+    private val tokenClient = HttpClient(CIO) {
+        install(ContentNegotiation) {
+            json(Json { ignoreUnknownKeys = true })
+        }
+    }
 
     private val client = HttpClient(CIO) {
         install(ContentNegotiation) {
@@ -66,15 +75,9 @@ class TimetableService {
         install(Auth) {
             bearer {
                 loadTokens {
-                    // TODO store
-                    null
+                    cachedTokens.takeIf { Instant.now().isBefore(cachedTokensExpiresAt) }
                 }
                 refreshTokens {
-                    val tokenClient = HttpClient(CIO) {
-                        install(ContentNegotiation) {
-                            json(Json { ignoreUnknownKeys = true })
-                        }
-                    }
                     val response: TokenResponse = tokenClient.submitForm (
                         url = TOKEN_URL,
                         formParameters = parameters {
@@ -84,10 +87,13 @@ class TimetableService {
                         basicAuth(CLIENT_ID, CLIENT_SECRET)
                     }.body()
 
-                    BearerTokens(
+                    val tokens = BearerTokens(
                         accessToken = response.access_token,
                         refreshToken = null
                     )
+                    cachedTokens = tokens
+                    cachedTokensExpiresAt = tokenExpiry(response)
+                    tokens
                 }
             }
         }
@@ -117,5 +123,11 @@ class TimetableService {
             minutes < 1 -> "Nu"
             else -> "$minutes min"
         }
+    }
+
+    private fun tokenExpiry(response: TokenResponse): Instant {
+        val expiresIn = response.expires_in?.toLong() ?: 0L
+        val safetyBufferSeconds = 60L
+        return Instant.now().plusSeconds(maxOf(0L, expiresIn - safetyBufferSeconds))
     }
 }
