@@ -14,5 +14,5 @@ Add your `vasttrafik.clientId` and `vasttrafik.clientSecret` into `local.propert
 ### Other
 - [ ] App icon
 - [ ] Highlight
-- [ ] Keep screen alive
+- [x] Keep screen alive
 - [ ] Sign app
