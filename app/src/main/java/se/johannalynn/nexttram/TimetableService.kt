@@ -21,7 +21,10 @@ import java.time.ZonedDateTime
 data class Departure(
     val line: String,
     val destination: String,
-    val next: String
+    val next: String,
+    val backgroundColor: String,
+    val foregroundColor: String,
+    val borderColor: String
 )
 
 @Serializable
@@ -45,7 +48,7 @@ data class StopPoint(val platform: String)
 data class ServiceJourney(val direction: String, val line: Line)
 
 @Serializable
-data class Line(val shortName: String)
+data class Line(val shortName: String, val backgroundColor: String, val foregroundColor: String, val borderColor: String)
 
 class TimetableService {
 
@@ -96,7 +99,10 @@ class TimetableService {
             .map { apiDeparture ->
                 Departure(apiDeparture.serviceJourney.line.shortName,
                     apiDeparture.serviceJourney.direction,
-                    departureTime(apiDeparture.estimatedOtherwisePlannedTime))
+                    departureTime(apiDeparture.estimatedOtherwisePlannedTime),
+                    apiDeparture.serviceJourney.line.backgroundColor,
+                    apiDeparture.serviceJourney.line.foregroundColor,
+                    apiDeparture.serviceJourney.line.borderColor)
         }
     }
 

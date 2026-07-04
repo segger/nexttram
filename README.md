@@ -6,7 +6,7 @@ Add your `vasttrafik.clientId` and `vasttrafik.clientSecret` into `local.propert
 - [x] Reload on demand
 - [x] Dark mode
 - [ ] Change platform (and station)
-- [ ] Colors of trams
+- [x] Colors of trams
 
 #### Wheather
 * api.met.no (YR)
