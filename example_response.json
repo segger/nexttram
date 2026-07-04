@@ -1,0 +1,374 @@
+{
+  "results": [
+    {
+      "detailsReference": "eyJUIjpbeyJSIjoiMXwyNjM4N3wwfDgwfDQwNzIwMjYiLCJJIjowfV19",
+      "serviceJourney": {
+        "gid": "9015014500104324",
+        "direction": "Tynnered",
+        "directionDetails": {
+          "fullDirection": "Tynnered",
+          "shortDirection": "Tynnered"
+        },
+        "line": {
+          "gid": "9011014500100000",
+          "name": "Spårvagn 1",
+          "shortName": "1",
+          "designation": "1",
+          "backgroundColor": "#ffffff",
+          "foregroundColor": "#006c93",
+          "borderColor": "#006c93",
+          "transportMode": "tram",
+          "transportSubMode": "none",
+          "isWheelchairAccessible": true,
+          "isRealtimeJourney": false
+        }
+      },
+      "stopPoint": {
+        "gid": "9022014001200003",
+        "name": "Axel Dahlströms Torg, Göteborg",
+        "platform": "C",
+        "latitude": 57.67226173,
+        "longitude": 11.92749669
+      },
+      "plannedTime": "2026-07-04T10:08:00.0000000+02:00",
+      "estimatedTime": "2026-07-04T10:08:00.0000000+02:00",
+      "estimatedOtherwisePlannedTime": "2026-07-04T10:08:00.0000000+02:00",
+      "isCancelled": false,
+      "isPartCancelled": false
+    },
+    {
+      "detailsReference": "eyJUIjpbeyJSIjoiMXwyNjQyNXwwfDgwfDQwNzIwMjYiLCJJIjowfV19",
+      "serviceJourney": {
+        "gid": "9015014500104377",
+        "direction": "Östra Sjukhuset",
+        "directionDetails": {
+          "fullDirection": "Östra Sjukhuset",
+          "shortDirection": "Östra Sjukhuset"
+        },
+        "line": {
+          "gid": "9011014500100000",
+          "name": "Spårvagn 1",
+          "shortName": "1",
+          "designation": "1",
+          "backgroundColor": "#ffffff",
+          "foregroundColor": "#006c93",
+          "borderColor": "#006c93",
+          "transportMode": "tram",
+          "transportSubMode": "none",
+          "isWheelchairAccessible": true,
+          "isRealtimeJourney": false
+        }
+      },
+      "stopPoint": {
+        "gid": "9022014001200002",
+        "name": "Axel Dahlströms Torg, Göteborg",
+        "platform": "B",
+        "latitude": 57.67241582,
+        "longitude": 11.92791981
+      },
+      "plannedTime": "2026-07-04T10:09:00.0000000+02:00",
+      "estimatedTime": "2026-07-04T10:10:00.0000000+02:00",
+      "estimatedOtherwisePlannedTime": "2026-07-04T10:10:00.0000000+02:00",
+      "isCancelled": false,
+      "isPartCancelled": false
+    },
+    {
+      "detailsReference": "eyJUIjpbeyJSIjoiMXw2ODQ0NnwxfDgwfDQwNzIwMjYiLCJJIjowfV19",
+      "serviceJourney": {
+        "gid": "9015014500604374",
+        "direction": "Länsmansgården",
+        "directionDetails": {
+          "fullDirection": "Länsmansgården",
+          "shortDirection": "Länsmansgården"
+        },
+        "line": {
+          "gid": "9011014500600000",
+          "name": "Spårvagn 6",
+          "shortName": "6",
+          "designation": "6",
+          "backgroundColor": "#f89828",
+          "foregroundColor": "#00435c",
+          "borderColor": "#f89828",
+          "transportMode": "tram",
+          "transportSubMode": "none",
+          "isWheelchairAccessible": true,
+          "isRealtimeJourney": false
+        }
+      },
+      "stopPoint": {
+        "gid": "9022014001200002",
+        "name": "Axel Dahlströms Torg, Göteborg",
+        "platform": "B",
+        "latitude": 57.67241582,
+        "longitude": 11.92791981
+      },
+      "plannedTime": "2026-07-04T10:11:00.0000000+02:00",
+      "estimatedTime": "2026-07-04T10:10:00.0000000+02:00",
+      "estimatedOtherwisePlannedTime": "2026-07-04T10:10:00.0000000+02:00",
+      "isCancelled": false,
+      "isPartCancelled": false
+    },
+    {
+      "detailsReference": "eyJUIjpbeyJSIjoiMXw2ODQ0OHwxfDgwfDQwNzIwMjYiLCJJIjowfV19",
+      "serviceJourney": {
+        "gid": "9015014500704401",
+        "direction": "Bergsjön via Annedal",
+        "directionDetails": {
+          "fullDirection": "Bergsjön via Annedal",
+          "shortDirection": "Bergsjön",
+          "via": "Annedal"
+        },
+        "line": {
+          "gid": "9011014500700000",
+          "name": "Spårvagn 7",
+          "shortName": "7",
+          "designation": "7",
+          "backgroundColor": "#764712",
+          "foregroundColor": "#ffffff",
+          "borderColor": "#764712",
+          "transportMode": "tram",
+          "transportSubMode": "none",
+          "isWheelchairAccessible": true,
+          "isRealtimeJourney": false
+        }
+      },
+      "stopPoint": {
+        "gid": "9022014001200002",
+        "name": "Axel Dahlströms Torg, Göteborg",
+        "platform": "B",
+        "latitude": 57.67241582,
+        "longitude": 11.92791981
+      },
+      "plannedTime": "2026-07-04T10:16:00.0000000+02:00",
+      "estimatedTime": "2026-07-04T10:16:00.0000000+02:00",
+      "estimatedOtherwisePlannedTime": "2026-07-04T10:16:00.0000000+02:00",
+      "isCancelled": false,
+      "isPartCancelled": false
+    },
+    {
+      "detailsReference": "eyJUIjpbeyJSIjoiMXwyNjQ4OXwwfDgwfDQwNzIwMjYiLCJJIjowfV19",
+      "serviceJourney": {
+        "gid": "9015014500204425",
+        "direction": "Biskopsgården",
+        "directionDetails": {
+          "fullDirection": "Biskopsgården",
+          "shortDirection": "Biskopsgården"
+        },
+        "line": {
+          "gid": "9011014500200000",
+          "name": "Spårvagn 2",
+          "shortName": "2",
+          "designation": "2",
+          "backgroundColor": "#ffdd00",
+          "foregroundColor": "#006c93",
+          "borderColor": "#ffdd00",
+          "transportMode": "tram",
+          "transportSubMode": "none",
+          "isWheelchairAccessible": false,
+          "isRealtimeJourney": false
+        }
+      },
+      "stopPoint": {
+        "gid": "9022014001200001",
+        "name": "Axel Dahlströms Torg, Göteborg",
+        "platform": "A",
+        "latitude": 57.67236322,
+        "longitude": 11.92797459
+      },
+      "plannedTime": "2026-07-04T10:20:00.0000000+02:00",
+      "estimatedOtherwisePlannedTime": "2026-07-04T10:20:00.0000000+02:00",
+      "isCancelled": false,
+      "isPartCancelled": false
+    },
+    {
+      "detailsReference": "eyJUIjpbeyJSIjoiMXwyMzU1fDJ8ODB8NDA3MjAyNiIsIkkiOjB9XX0",
+      "serviceJourney": {
+        "gid": "9015014506500605",
+        "direction": "Kungssten, Påstigning fram",
+        "directionDetails": {
+          "fullDirection": "Kungssten, Påstigning fram",
+          "shortDirection": "Kungssten",
+          "isFrontEntry": true
+        },
+        "line": {
+          "gid": "9011014506500000",
+          "name": "Buss 65",
+          "shortName": "65",
+          "designation": "65",
+          "backgroundColor": "#ffff50",
+          "foregroundColor": "#0061eb",
+          "borderColor": "#0061eb",
+          "transportMode": "bus",
+          "transportSubMode": "none",
+          "isWheelchairAccessible": true,
+          "isRealtimeJourney": false
+        }
+      },
+      "stopPoint": {
+        "gid": "9022014001200005",
+        "name": "Axel Dahlströms Torg, Göteborg",
+        "platform": "E",
+        "latitude": 57.67187032,
+        "longitude": 11.92766403
+      },
+      "plannedTime": "2026-07-04T10:20:00.0000000+02:00",
+      "estimatedTime": "2026-07-04T10:20:00.0000000+02:00",
+      "estimatedOtherwisePlannedTime": "2026-07-04T10:20:00.0000000+02:00",
+      "isCancelled": false,
+      "isPartCancelled": false
+    },
+    {
+      "detailsReference": "eyJUIjpbeyJSIjoiMXw2ODQzOXwxfDgwfDQwNzIwMjYiLCJJIjowfV19",
+      "serviceJourney": {
+        "gid": "9015014500704320",
+        "direction": "Tynnered",
+        "directionDetails": {
+          "fullDirection": "Tynnered",
+          "shortDirection": "Tynnered"
+        },
+        "line": {
+          "gid": "9011014500700000",
+          "name": "Spårvagn 7",
+          "shortName": "7",
+          "designation": "7",
+          "backgroundColor": "#764712",
+          "foregroundColor": "#ffffff",
+          "borderColor": "#764712",
+          "transportMode": "tram",
+          "transportSubMode": "none",
+          "isWheelchairAccessible": true,
+          "isRealtimeJourney": false
+        }
+      },
+      "stopPoint": {
+        "gid": "9022014001200003",
+        "name": "Axel Dahlströms Torg, Göteborg",
+        "platform": "C",
+        "latitude": 57.67226173,
+        "longitude": 11.92749669
+      },
+      "plannedTime": "2026-07-04T10:15:00.0000000+02:00",
+      "estimatedTime": "2026-07-04T10:22:00.0000000+02:00",
+      "estimatedOtherwisePlannedTime": "2026-07-04T10:22:00.0000000+02:00",
+      "isCancelled": false,
+      "isPartCancelled": false
+    },
+    {
+      "detailsReference": "eyJUIjpbeyJSIjoiMXwyNjQyNXwxfDgwfDQwNzIwMjYiLCJJIjowfV19",
+      "serviceJourney": {
+        "gid": "9015014500104413",
+        "direction": "Östra Sjukhuset",
+        "directionDetails": {
+          "fullDirection": "Östra Sjukhuset",
+          "shortDirection": "Östra Sjukhuset"
+        },
+        "line": {
+          "gid": "9011014500100000",
+          "name": "Spårvagn 1",
+          "shortName": "1",
+          "designation": "1",
+          "backgroundColor": "#ffffff",
+          "foregroundColor": "#006c93",
+          "borderColor": "#006c93",
+          "transportMode": "tram",
+          "transportSubMode": "none",
+          "isWheelchairAccessible": true,
+          "isRealtimeJourney": false
+        }
+      },
+      "stopPoint": {
+        "gid": "9022014001200002",
+        "name": "Axel Dahlströms Torg, Göteborg",
+        "platform": "B",
+        "latitude": 57.67241582,
+        "longitude": 11.92791981
+      },
+      "plannedTime": "2026-07-04T10:24:00.0000000+02:00",
+      "estimatedTime": "2026-07-04T10:24:00.0000000+02:00",
+      "estimatedOtherwisePlannedTime": "2026-07-04T10:24:00.0000000+02:00",
+      "isCancelled": false,
+      "isPartCancelled": false
+    },
+    {
+      "detailsReference": "eyJUIjpbeyJSIjoiMXw0NzM1OXwxfDgwfDQwNzIwMjYiLCJJIjowfV19",
+      "serviceJourney": {
+        "gid": "9015014500604343",
+        "direction": "Frölunda",
+        "directionDetails": {
+          "fullDirection": "Frölunda",
+          "shortDirection": "Frölunda"
+        },
+        "line": {
+          "gid": "9011014500600000",
+          "name": "Spårvagn 6",
+          "shortName": "6",
+          "designation": "6",
+          "backgroundColor": "#f89828",
+          "foregroundColor": "#00435c",
+          "borderColor": "#f89828",
+          "transportMode": "tram",
+          "transportSubMode": "none",
+          "isWheelchairAccessible": true,
+          "isRealtimeJourney": false
+        }
+      },
+      "stopPoint": {
+        "gid": "9022014001200003",
+        "name": "Axel Dahlströms Torg, Göteborg",
+        "platform": "C",
+        "latitude": 57.67226173,
+        "longitude": 11.92749669
+      },
+      "plannedTime": "2026-07-04T10:19:00.0000000+02:00",
+      "estimatedTime": "2026-07-04T10:24:00.0000000+02:00",
+      "estimatedOtherwisePlannedTime": "2026-07-04T10:24:00.0000000+02:00",
+      "isCancelled": false,
+      "isPartCancelled": false
+    },
+    {
+      "detailsReference": "eyJUIjpbeyJSIjoiMXw2ODQ1M3wwfDgwfDQwNzIwMjYiLCJJIjowfV19",
+      "serviceJourney": {
+        "gid": "9015014500604398",
+        "direction": "Länsmansgården",
+        "directionDetails": {
+          "fullDirection": "Länsmansgården",
+          "shortDirection": "Länsmansgården"
+        },
+        "line": {
+          "gid": "9011014500600000",
+          "name": "Spårvagn 6",
+          "shortName": "6",
+          "designation": "6",
+          "backgroundColor": "#f89828",
+          "foregroundColor": "#00435c",
+          "borderColor": "#f89828",
+          "transportMode": "tram",
+          "transportSubMode": "none",
+          "isWheelchairAccessible": true,
+          "isRealtimeJourney": false
+        }
+      },
+      "stopPoint": {
+        "gid": "9022014001200002",
+        "name": "Axel Dahlströms Torg, Göteborg",
+        "platform": "B",
+        "latitude": 57.67241582,
+        "longitude": 11.92791981
+      },
+      "plannedTime": "2026-07-04T10:27:00.0000000+02:00",
+      "estimatedTime": "2026-07-04T10:26:00.0000000+02:00",
+      "estimatedOtherwisePlannedTime": "2026-07-04T10:26:00.0000000+02:00",
+      "isCancelled": false,
+      "isPartCancelled": false
+    }
+  ],
+  "pagination": {
+    "limit": 10,
+    "offset": 0,
+    "size": 10
+  },
+  "links": {
+    "next": "stop-areas/9021014001200000/departures?offset=10&limit=10",
+    "current": "stop-areas/9021014001200000/departures"
+  }
+}
