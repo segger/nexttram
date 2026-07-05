@@ -2,6 +2,7 @@ package se.johannalynn.nexttram
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,12 +15,18 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,6 +42,7 @@ import java.util.Locale
 @Composable
 fun TimetableScreenWrapper(
     uiState: TimetableUiState,
+    defaultPlatform: String,
     onRefresh: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -54,6 +62,8 @@ fun TimetableScreenWrapper(
         is TimetableUiState.Success -> {
             TimetableScreen(
                 departures = uiState.departures,
+                platforms = uiState.platforms,
+                defaultPlatform = defaultPlatform,
                 onRefresh = onRefresh,
                 lastUpdated = SimpleDateFormat("d MMMM HH:mm", Locale("sv", "SE")).format(Calendar.getInstance().time),
                 modifier = modifier
@@ -67,10 +77,18 @@ fun TimetableScreenWrapper(
 @Composable
 fun TimetableScreen(
     departures: List<Departure>,
+    platforms: List<String>,
+    defaultPlatform: String,
     onRefresh: () -> Unit,
     lastUpdated: String,
     modifier: Modifier = Modifier
 ) {
+    var selectedPlatform by remember(defaultPlatform, platforms) {
+        mutableStateOf(defaultPlatform.takeIf { it in platforms } ?: platforms.firstOrNull() ?: "")
+    }
+    var platformMenuExpanded by remember { mutableStateOf(false) }
+    val visibleDepartures = departures.filter { departure -> departure.platform == selectedPlatform }
+
     PullToRefreshBox(
         isRefreshing = false,
         onRefresh = onRefresh,
@@ -85,12 +103,40 @@ fun TimetableScreen(
                     .fillMaxWidth()
                     .padding(bottom = 16.dp)
             ) {
-                Text(
-                    text = "Axel Dahlströms torg ( C )",
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.align(Alignment.Center)
-                )
+                Row(
+                    modifier = Modifier.align(Alignment.Center),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Axel Dahlströms torg",
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Box {
+                        Text(
+                            text = selectedPlatform,
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier
+                                .padding(start = 8.dp)
+                                .clickable { platformMenuExpanded = true }
+                        )
+                        DropdownMenu(
+                            expanded = platformMenuExpanded,
+                            onDismissRequest = { platformMenuExpanded = false }
+                        ) {
+                            platforms.forEach { platform ->
+                                DropdownMenuItem(
+                                    text = { Text(platform) },
+                                    onClick = {
+                                        selectedPlatform = platform
+                                        platformMenuExpanded = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
                 Text(
                     text = lastUpdated,
                     style = MaterialTheme.typography.titleMedium,
@@ -128,7 +174,7 @@ fun TimetableScreen(
             HorizontalDivider()
 
             LazyColumn(modifier = Modifier.fillMaxSize()) {
-                items(departures) { departure ->
+                items(visibleDepartures) { departure ->
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -183,11 +229,13 @@ fun TimetableScreenPreview() {
     NextTramTheme {
         TimetableScreen(
             departures = listOf(
-                Departure("2", "Biskopsgården", "Nu","#ffdd00", "#006c93","#ffdd00"),
-                Departure("7", "Tynnered", "3 min", "#00435c", "#ffffff", "#00435c"),
-                Departure("6", "Länsmansgården", "8 min","#f89828", "#00435c", "#f89828"),
-                Departure("1", "Östra sjukhuset", "12 min", "#ffffff", "#006c93","#006c93")
+                Departure("2", "Biskopsgården", "Nu", "C", "#ffdd00", "#006c93","#ffdd00"),
+                Departure("7", "Tynnered", "3 min", "C", "#00435c", "#ffffff", "#00435c"),
+                Departure("6", "Länsmansgården", "8 min", "B","#f89828", "#00435c", "#f89828"),
+                Departure("1", "Östra sjukhuset", "12 min", "C", "#ffffff", "#006c93","#006c93")
             ),
+            platforms = listOf("B", "C"),
+            defaultPlatform = "C",
             onRefresh = {},
             lastUpdated = "6 april 15:30"
         )

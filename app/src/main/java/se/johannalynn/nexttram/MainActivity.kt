@@ -48,6 +48,7 @@ fun NextTramApp(
 ) {
     var currentDestination by remember { mutableStateOf(AppDestinations.HOME) }
     var darkModeEnabled by remember { mutableStateOf(false) }
+    var defaultPlatform by remember { mutableStateOf("C") }
 
     val uiState by viewModel.uiState.collectAsState()
 
@@ -80,12 +81,15 @@ fun NextTramApp(
                 when (currentDestination) {
                     AppDestinations.HOME -> TimetableScreenWrapper(
                         uiState = uiState,
+                        defaultPlatform = defaultPlatform,
                         onRefresh = viewModel::fetchDepartures,
                         modifier = Modifier.padding(innerPadding)
                     )
                     AppDestinations.SETTINGS -> SettingsScreen(
                         darkModeEnabled = darkModeEnabled,
                         onDarkModeChanged = { darkModeEnabled = it },
+                        defaultPlatform = defaultPlatform,
+                        onDefaultPlatformChanged = { defaultPlatform = it },
                         modifier = Modifier.padding(innerPadding)
                     )
                 }

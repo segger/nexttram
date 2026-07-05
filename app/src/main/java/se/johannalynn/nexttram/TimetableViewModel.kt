@@ -10,7 +10,7 @@ import kotlinx.coroutines.launch
 sealed interface TimetableUiState {
     data object Loading : TimetableUiState
     data class Error(val message: String) : TimetableUiState
-    data class Success(val departures: List<Departure>) : TimetableUiState
+    data class Success(val departures: List<Departure>, val platforms: List<String>) : TimetableUiState
 }
 
 class TimetableViewModel : ViewModel() {
@@ -28,7 +28,7 @@ class TimetableViewModel : ViewModel() {
             _uiState.value = TimetableUiState.Loading
             try {
                 val result = service.getDepartures()
-                _uiState.value = TimetableUiState.Success(result)
+                _uiState.value = TimetableUiState.Success(result.departures, result.platforms)
             } catch (e: Exception) {
                 _uiState.value = TimetableUiState.Error("Failed to load: ${e.message}")
             }

@@ -23,9 +23,15 @@ data class Departure(
     val line: String,
     val destination: String,
     val next: String,
+    val platform: String,
     val backgroundColor: String,
     val foregroundColor: String,
     val borderColor: String
+)
+
+data class DeparturesResult(
+    val departures: List<Departure>,
+    val platforms: List<String>
 )
 
 @Serializable
@@ -99,17 +105,23 @@ class TimetableService {
         }
     }
 
-    suspend fun getDepartures(): List<Departure> {
-        val departures = client.get("$BASE_URL/stop-areas/${gid}/departures").body<DeparturesResponse>()
-        return departures.results.filter { departure -> departure.stopPoint.platform == "C" }
+    suspend fun getDepartures(): DeparturesResult {
+        val response = client.get("$BASE_URL/stop-areas/${gid}/departures").body<DeparturesResponse>()
+        val platforms = response.results
+            .map { departure -> departure.stopPoint.platform }
+            .distinct()
+            .sorted()
+        val departures = response.results
             .map { apiDeparture ->
                 Departure(apiDeparture.serviceJourney.line.shortName,
                     apiDeparture.serviceJourney.direction,
                     departureTime(apiDeparture.estimatedOtherwisePlannedTime),
+                    apiDeparture.stopPoint.platform,
                     apiDeparture.serviceJourney.line.backgroundColor,
                     apiDeparture.serviceJourney.line.foregroundColor,
                     apiDeparture.serviceJourney.line.borderColor)
         }
+        return DeparturesResult(departures, platforms)
     }
 
     private fun departureTime(departureTimestamp: String): String {

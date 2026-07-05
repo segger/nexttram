@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -18,6 +19,8 @@ import se.johannalynn.nexttram.ui.theme.NextTramTheme
 fun SettingsScreen(
     darkModeEnabled: Boolean,
     onDarkModeChanged: (Boolean) -> Unit,
+    defaultPlatform: String,
+    onDefaultPlatformChanged: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxSize().padding(16.dp)) {
@@ -34,6 +37,12 @@ fun SettingsScreen(
                 onCheckedChange = onDarkModeChanged
             )
         }
+        OutlinedTextField(
+            value = defaultPlatform,
+            onValueChange = onDefaultPlatformChanged,
+            label = { Text("Default platform") },
+            modifier = Modifier.padding(top = 16.dp)
+        )
     }
 }
 
@@ -43,7 +52,9 @@ fun SettingsScreenPreview() {
     NextTramTheme {
         SettingsScreen(
             darkModeEnabled = false,
-            onDarkModeChanged = {}
+            onDarkModeChanged = {},
+            defaultPlatform = "C",
+            onDefaultPlatformChanged = {}
         )
     }
 }
