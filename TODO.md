@@ -1,11 +1,11 @@
 ### Features
-- [ ] Auto-update
+- [x] Auto-update
 
 - [x] Change station
 
-#### Weather
-* api.met.no (YR)
-
+* [ ] Weather
+  * api.met.no (YR)
+* [ ] Remember todo, eg. matlåda
 
 ### Other
 - [ ] Handle secrets

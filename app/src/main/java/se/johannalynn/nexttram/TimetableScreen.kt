@@ -36,8 +36,9 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import se.johannalynn.nexttram.ui.theme.NextTramTheme
-import java.text.SimpleDateFormat
-import java.util.Calendar
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 @Composable
@@ -91,7 +92,9 @@ fun TimetableScreenWrapper(
                 selectedPlatform = selectedPlatform,
                 onPlatformSelected = onPlatformSelected,
                 onRefresh = onRefresh,
-                lastUpdated = SimpleDateFormat("d MMMM HH:mm", Locale("sv", "SE")).format(Calendar.getInstance().time),
+                lastUpdated = formatLastUpdated(uiState.lastUpdatedMillis),
+                isRefreshing = uiState.isRefreshing,
+                refreshError = uiState.refreshError,
                 modifier = modifier
             )
         }
@@ -109,13 +112,15 @@ fun TimetableScreen(
     onPlatformSelected: (String) -> Unit,
     onRefresh: () -> Unit,
     lastUpdated: String,
+    isRefreshing: Boolean,
+    refreshError: String?,
     modifier: Modifier = Modifier
 ) {
     var platformMenuExpanded by remember { mutableStateOf(false) }
     val visibleDepartures = departures.filter { departure -> departure.platform == selectedPlatform }
 
     PullToRefreshBox(
-        isRefreshing = false,
+        isRefreshing = isRefreshing,
         onRefresh = onRefresh,
         modifier = modifier.fillMaxSize()
     ) {
@@ -167,6 +172,15 @@ fun TimetableScreen(
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Light,
                     modifier = Modifier.align(Alignment.CenterEnd).padding(end = 16.dp)
+                )
+            }
+
+            refreshError?.let { message ->
+                Text(
+                    text = message,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(bottom = 8.dp),
                 )
             }
 
@@ -254,6 +268,15 @@ private fun LineBadge(departure: Departure, modifier: Modifier = Modifier) {
 private fun parseHexColor(value: String, fallback: Color): Color =
     runCatching { Color(android.graphics.Color.parseColor(value)) }.getOrDefault(fallback)
 
+private fun formatLastUpdated(timestampMillis: Long): String = LAST_UPDATED_FORMATTER
+    .withZone(ZoneId.systemDefault())
+    .format(Instant.ofEpochMilli(timestampMillis))
+
+private val LAST_UPDATED_FORMATTER = DateTimeFormatter.ofPattern(
+    "d MMMM HH:mm",
+    Locale.forLanguageTag("sv-SE"),
+)
+
 @Preview(device = Devices.TABLET, showBackground = true)
 @Composable
 fun TimetableScreenPreview() {
@@ -270,7 +293,9 @@ fun TimetableScreenPreview() {
             selectedPlatform = "C",
             onPlatformSelected = {},
             onRefresh = {},
-            lastUpdated = "6 april 15:30"
+            lastUpdated = "6 april 15:30",
+            isRefreshing = false,
+            refreshError = null,
         )
     }
 }

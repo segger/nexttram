@@ -28,6 +28,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
 import se.johannalynn.nexttram.ui.theme.NextTramTheme
 
@@ -55,6 +56,7 @@ fun NextTramApp(
     val selectedPlatform by viewModel.selectedPlatform.collectAsState()
     val stationQuery by viewModel.stationQuery.collectAsState()
     val stationSearchState by viewModel.stationSearchState.collectAsState()
+    val autoUpdateSettings by viewModel.autoUpdateSettings.collectAsState()
 
     LaunchedEffect(viewModel) {
         viewModel.start()
@@ -87,17 +89,27 @@ fun NextTramApp(
         ) {
             Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                 when (currentDestination) {
-                    AppDestinations.HOME -> TimetableScreenWrapper(
-                        uiState = uiState,
-                        stationName = selectedStation.name,
-                        selectedPlatform = selectedPlatform,
-                        onPlatformSelected = viewModel::selectPlatform,
-                        onRefresh = viewModel::fetchDepartures,
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                    AppDestinations.HOME -> {
+                        LifecycleStartEffect(viewModel) {
+                            viewModel.startAutoUpdate()
+                            onStopOrDispose { viewModel.stopAutoUpdate() }
+                        }
+                        TimetableScreenWrapper(
+                            uiState = uiState,
+                            stationName = selectedStation.name,
+                            selectedPlatform = selectedPlatform,
+                            onPlatformSelected = viewModel::selectPlatform,
+                            onRefresh = viewModel::fetchDepartures,
+                            modifier = Modifier.padding(innerPadding)
+                        )
+                    }
                     AppDestinations.SETTINGS -> SettingsScreen(
                         darkModeEnabled = darkModeEnabled,
                         onDarkModeChanged = { darkModeEnabled = it },
+                        autoUpdateSettings = autoUpdateSettings,
+                        onAutoUpdateEnabledChanged = viewModel::setAutoUpdateEnabled,
+                        onAutoUpdateStartChanged = viewModel::setAutoUpdateStart,
+                        onAutoUpdateEndChanged = viewModel::setAutoUpdateEnd,
                         selectedStationName = selectedStation.name,
                         stationQuery = stationQuery,
                         stationSearchState = stationSearchState,
