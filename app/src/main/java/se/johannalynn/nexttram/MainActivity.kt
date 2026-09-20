@@ -31,6 +31,7 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleStartEffect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import se.johannalynn.nexttram.ui.theme.NextTramTheme
 
@@ -48,7 +49,8 @@ class MainActivity : ComponentActivity() {
 @Preview(device = Devices.TABLET, showBackground = true)
 @Composable
 fun NextTramApp(
-    viewModel: TimetableViewModel = viewModel()
+    viewModel: TimetableViewModel = viewModel(),
+    dashboardViewModel: DashboardViewModel = viewModel(),
 ) {
     var currentDestination by remember { mutableStateOf(AppDestinations.HOME) }
     var darkModeEnabled by remember { mutableStateOf(false) }
@@ -59,6 +61,13 @@ fun NextTramApp(
     val stationQuery by viewModel.stationQuery.collectAsState()
     val stationSearchState by viewModel.stationSearchState.collectAsState()
     val autoUpdateSettings by viewModel.autoUpdateSettings.collectAsState()
+    val weather by dashboardViewModel.weather.collectAsStateWithLifecycle()
+    val rememberList by dashboardViewModel.rememberList.collectAsStateWithLifecycle()
+
+    LifecycleStartEffect(dashboardViewModel) {
+        dashboardViewModel.start()
+        onStopOrDispose { dashboardViewModel.stop() }
+    }
 
     LaunchedEffect(viewModel) {
         viewModel.start()
@@ -96,14 +105,25 @@ fun NextTramApp(
                             viewModel.startAutoUpdate()
                             onStopOrDispose { viewModel.stopAutoUpdate() }
                         }
-                        TimetableScreenWrapper(
-                            uiState = uiState,
-                            stationName = selectedStation.name,
-                            selectedPlatform = selectedPlatform,
-                            onPlatformSelected = viewModel::selectPlatform,
-                            onRefresh = viewModel::fetchDepartures,
-                            modifier = Modifier.padding(innerPadding)
-                        )
+                        DashboardScreen(
+                            weather = weather,
+                            rememberItems = rememberList.items,
+                            onItemChecked = dashboardViewModel::checkRememberItem,
+                            onRefreshWeather = dashboardViewModel::refreshWeather,
+                            modifier = Modifier.padding(innerPadding),
+                        ) { modifier ->
+                            TimetableScreenWrapper(
+                                uiState = uiState,
+                                stationName = selectedStation.name,
+                                selectedPlatform = selectedPlatform,
+                                onPlatformSelected = viewModel::selectPlatform,
+                                onRefresh = {
+                                    viewModel.fetchDepartures()
+                                    dashboardViewModel.refreshWeather()
+                                },
+                                modifier = modifier,
+                            )
+                        }
                     }
                     AppDestinations.SETTINGS -> SettingsScreen(
                         darkModeEnabled = darkModeEnabled,
@@ -117,6 +137,9 @@ fun NextTramApp(
                         stationSearchState = stationSearchState,
                         onStationQueryChanged = viewModel::onStationQueryChanged,
                         onStationSelected = viewModel::selectStation,
+                        rememberItems = rememberList.items,
+                        onSaveRememberItem = dashboardViewModel::saveRememberItem,
+                        onDeleteRememberItem = dashboardViewModel::deleteRememberItem,
                         modifier = Modifier.padding(innerPadding)
                     )
                 }

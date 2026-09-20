@@ -2,7 +2,6 @@ package se.johannalynn.nexttram
 
 import android.text.format.DateFormat
 import androidx.annotation.StringRes
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,6 +15,10 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
@@ -27,6 +30,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -53,9 +57,15 @@ fun SettingsScreen(
     stationSearchState: StationSearchUiState,
     onStationQueryChanged: (String) -> Unit,
     onStationSelected: (Station) -> Unit,
+    rememberItems: List<RememberItem>,
+    onSaveRememberItem: (String?, String) -> Unit,
+    onDeleteRememberItem: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var editedTime by remember { mutableStateOf<ScheduleTime?>(null) }
+    var editingRememberItem by rememberSaveable { mutableStateOf(false) }
+    var editedItemId by rememberSaveable { mutableStateOf<String?>(null) }
+    var editedItemName by rememberSaveable { mutableStateOf("") }
     val context = LocalContext.current
     val locale = LocalConfiguration.current.locales[0]
     val is24Hour = DateFormat.is24HourFormat(context)
@@ -64,104 +74,161 @@ fun SettingsScreen(
         DateTimeFormatter.ofPattern(DateFormat.getBestDateTimePattern(locale, skeleton), locale)
     }
 
-    Column(
+    LazyColumn(
         modifier = modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        Row {
-            Text(
-                text = stringResource(R.string.settings_title),
-                style = MaterialTheme.typography.titleMedium,
-            )
-        }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 16.dp, top = 16.dp, end = 16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(stringResource(R.string.settings_dark_mode), modifier = Modifier.weight(1f))
-            Switch(
-                checked = darkModeEnabled,
-                onCheckedChange = onDarkModeChanged
-            )
-        }
-        ListItem(
-            headlineContent = { Text(stringResource(R.string.settings_auto_update)) },
-            trailingContent = {
-                Switch(
-                    checked = autoUpdateSettings.enabled,
-                    onCheckedChange = onAutoUpdateEnabledChanged,
+        item {
+            Row {
+                Text(
+                    text = stringResource(R.string.settings_title),
+                    style = MaterialTheme.typography.titleMedium,
                 )
-            },
-            modifier = Modifier.padding(top = 8.dp),
-        )
-        if (autoUpdateSettings.enabled) {
+            }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, top = 16.dp, end = 16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(stringResource(R.string.settings_dark_mode), modifier = Modifier.weight(1f))
+                Switch(
+                    checked = darkModeEnabled,
+                    onCheckedChange = onDarkModeChanged
+                )
+            }
             ListItem(
-                headlineContent = { Text(stringResource(R.string.settings_auto_update_from)) },
-                trailingContent = { Text(formatTime(autoUpdateSettings.startMinutes, timeFormatter)) },
-                modifier = Modifier.clickable { editedTime = ScheduleTime.START },
+                headlineContent = { Text(stringResource(R.string.settings_auto_update)) },
+                trailingContent = {
+                    Switch(
+                        checked = autoUpdateSettings.enabled,
+                        onCheckedChange = onAutoUpdateEnabledChanged,
+                    )
+                },
+                modifier = Modifier.padding(top = 8.dp),
             )
-            ListItem(
-                headlineContent = { Text(stringResource(R.string.settings_auto_update_to)) },
-                trailingContent = { Text(formatTime(autoUpdateSettings.endMinutes, timeFormatter)) },
-                modifier = Modifier.clickable { editedTime = ScheduleTime.END },
+            if (autoUpdateSettings.enabled) {
+                ListItem(
+                    headlineContent = { Text(stringResource(R.string.settings_auto_update_from)) },
+                    trailingContent = { Text(formatTime(autoUpdateSettings.startMinutes, timeFormatter)) },
+                    modifier = Modifier.clickable { editedTime = ScheduleTime.START },
+                )
+                ListItem(
+                    headlineContent = { Text(stringResource(R.string.settings_auto_update_to)) },
+                    trailingContent = { Text(formatTime(autoUpdateSettings.endMinutes, timeFormatter)) },
+                    modifier = Modifier.clickable { editedTime = ScheduleTime.END },
+                )
+            }
+            Text(
+                text = stringResource(R.string.settings_station),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(top = 24.dp)
+            )
+            Text(
+                text = selectedStationName,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+            OutlinedTextField(
+                value = stationQuery,
+                onValueChange = onStationQueryChanged,
+                label = { Text(stringResource(R.string.settings_search_station)) },
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp)
             )
         }
-        Text(
-            text = stringResource(R.string.settings_station),
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(top = 24.dp)
-        )
-        Text(
-            text = selectedStationName,
-            modifier = Modifier.padding(top = 8.dp)
-        )
-        OutlinedTextField(
-            value = stationQuery,
-            onValueChange = onStationQueryChanged,
-            label = { Text(stringResource(R.string.settings_search_station)) },
-            singleLine = true,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp)
-        )
 
         when (stationSearchState) {
             StationSearchUiState.Idle -> Unit
-            StationSearchUiState.Loading -> CircularProgressIndicator(
+            StationSearchUiState.Loading -> item { CircularProgressIndicator(
                 modifier = Modifier
                     .padding(top = 16.dp)
                     .size(24.dp)
-            )
-            StationSearchUiState.Error -> Text(
+            ) }
+            StationSearchUiState.Error -> item { Text(
                 text = stringResource(R.string.error_search_stations),
                 color = MaterialTheme.colorScheme.error,
                 modifier = Modifier.padding(top = 16.dp)
-            )
+            ) }
             is StationSearchUiState.Success -> {
                 if (stationSearchState.stations.isEmpty()) {
-                    Text(
+                    item { Text(
                         text = stringResource(R.string.settings_no_stations_found),
                         modifier = Modifier.padding(top = 16.dp)
-                    )
+                    ) }
                 } else {
-                    LazyColumn(modifier = Modifier.fillMaxWidth()) {
-                        items(
-                            items = stationSearchState.stations,
-                            key = Station::gid,
-                        ) { station ->
-                            ListItem(
-                                headlineContent = { Text(station.name) },
-                                modifier = Modifier.clickable { onStationSelected(station) }
-                            )
-                            HorizontalDivider()
-                        }
+                    items(
+                        items = stationSearchState.stations,
+                        key = { "station:${it.gid}" },
+                    ) { station ->
+                        ListItem(
+                            headlineContent = { Text(station.name) },
+                            modifier = Modifier.clickable { onStationSelected(station) }
+                        )
+                        HorizontalDivider()
                     }
                 }
             }
         }
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(top = 24.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(stringResource(R.string.remember_title),
+                    style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                TextButton(onClick = {
+                    editedItemId = null
+                    editedItemName = ""
+                    editingRememberItem = true
+                }) { Text(stringResource(R.string.remember_add)) }
+            }
+        }
+        items(rememberItems, key = { "remember:${it.id}" }) { item ->
+            ListItem(
+                headlineContent = { Text(item.name) },
+                trailingContent = {
+                    IconButton(onClick = { onDeleteRememberItem(item.id) }) {
+                        Icon(Icons.Default.Delete,
+                            contentDescription = stringResource(R.string.remember_delete, item.name))
+                    }
+                },
+                modifier = Modifier.clickable {
+                    editedItemId = item.id
+                    editedItemName = item.name
+                    editingRememberItem = true
+                },
+            )
+        }
+    }
+
+    if (editingRememberItem) {
+        AlertDialog(
+            onDismissRequest = { editingRememberItem = false },
+            title = { Text(stringResource(if (editedItemId == null) R.string.remember_add else R.string.remember_edit)) },
+            text = {
+                OutlinedTextField(
+                    value = editedItemName,
+                    onValueChange = { editedItemName = it },
+                    label = { Text(stringResource(R.string.remember_name)) },
+                    singleLine = true,
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    enabled = editedItemName.isNotBlank(),
+                    onClick = {
+                        onSaveRememberItem(editedItemId, editedItemName)
+                        editingRememberItem = false
+                    },
+                ) { Text(stringResource(R.string.save)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { editingRememberItem = false }) { Text(stringResource(R.string.cancel)) }
+            },
+        )
     }
 
     when (editedTime) {
@@ -249,6 +316,9 @@ fun SettingsScreenPreview() {
             ),
             onStationQueryChanged = {},
             onStationSelected = {},
+            rememberItems = listOf(RememberItem("1", "Matlåda")),
+            onSaveRememberItem = { _, _ -> },
+            onDeleteRememberItem = {},
         )
     }
 }
