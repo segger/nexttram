@@ -1,3 +1,29 @@
-<resources>
-    <string name="app_name">NextTram</string>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:locale="sv">
+    <string name="app_name" translatable="false">NextTram</string>
+    <string name="navigation_home">Hem</string>
+    <string name="navigation_settings">Inställningar</string>
+    <string name="error_update_departures">Kunde inte uppdatera</string>
+    <string name="error_search_stations">Kunde inte söka</string>
+    <string name="retry">Försök igen</string>
+    <string name="no_upcoming_departures">Inga kommande avgångar</string>
+    <string name="departure_line">Linje</string>
+    <string name="departure_destination">Destination</string>
+    <string name="departure_next">Nästa</string>
+    <string name="departure_now">Nu</string>
+    <plurals name="departure_minutes">
+        <item quantity="one">%d min</item>
+        <item quantity="other">%d min</item>
+    </plurals>
+    <string name="settings_title">Inställningar</string>
+    <string name="settings_dark_mode">Mörkt läge</string>
+    <string name="settings_auto_update">Automatisk uppdatering</string>
+    <string name="settings_auto_update_from">Från</string>
+    <string name="settings_auto_update_to">Till</string>
+    <string name="settings_station">Hållplats</string>
+    <string name="settings_search_station">Sök hållplats</string>
+    <string name="settings_no_stations_found">Inga hållplatser hittades</string>
+    <string name="settings_start_time">Starttid</string>
+    <string name="settings_end_time">Sluttid</string>
+    <string name="save">Spara</string>
+    <string name="cancel">Avbryt</string>
 </resources>

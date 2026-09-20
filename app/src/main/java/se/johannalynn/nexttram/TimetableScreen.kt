@@ -1,5 +1,6 @@
 package se.johannalynn.nexttram
 
+import android.text.format.DateFormat
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -30,7 +31,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
@@ -50,6 +54,8 @@ fun TimetableScreenWrapper(
     onRefresh: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val locale = LocalConfiguration.current.locales[0]
+
     when (uiState) {
         is TimetableUiState.Loading -> {
             Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -57,7 +63,7 @@ fun TimetableScreenWrapper(
             }
         }
 
-        is TimetableUiState.Error -> {
+        TimetableUiState.Error -> {
             Column(
                 modifier = modifier
                     .fillMaxSize()
@@ -71,7 +77,7 @@ fun TimetableScreenWrapper(
                     fontWeight = FontWeight.Bold,
                 )
                 Text(
-                    text = uiState.message,
+                    text = stringResource(R.string.error_update_departures),
                     color = MaterialTheme.colorScheme.error,
                     modifier = Modifier.padding(top = 8.dp),
                 )
@@ -79,7 +85,7 @@ fun TimetableScreenWrapper(
                     onClick = onRefresh,
                     modifier = Modifier.padding(top = 16.dp),
                 ) {
-                    Text("Försök igen")
+                    Text(stringResource(R.string.retry))
                 }
             }
         }
@@ -92,9 +98,9 @@ fun TimetableScreenWrapper(
                 selectedPlatform = selectedPlatform,
                 onPlatformSelected = onPlatformSelected,
                 onRefresh = onRefresh,
-                lastUpdated = formatLastUpdated(uiState.lastUpdatedMillis),
+                lastUpdated = formatLastUpdated(uiState.lastUpdatedMillis, locale),
                 isRefreshing = uiState.isRefreshing,
-                refreshError = uiState.refreshError,
+                refreshFailed = uiState.refreshFailed,
                 modifier = modifier
             )
         }
@@ -113,7 +119,7 @@ fun TimetableScreen(
     onRefresh: () -> Unit,
     lastUpdated: String,
     isRefreshing: Boolean,
-    refreshError: String?,
+    refreshFailed: Boolean,
     modifier: Modifier = Modifier
 ) {
     var platformMenuExpanded by remember { mutableStateOf(false) }
@@ -175,9 +181,9 @@ fun TimetableScreen(
                 )
             }
 
-            refreshError?.let { message ->
+            if (refreshFailed) {
                 Text(
-                    text = message,
+                    text = stringResource(R.string.error_update_departures),
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.padding(bottom = 8.dp),
@@ -186,7 +192,7 @@ fun TimetableScreen(
 
             if (departures.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Inga kommande avgångar")
+                    Text(stringResource(R.string.no_upcoming_departures))
                 }
             } else {
                 // Table Header
@@ -197,19 +203,19 @@ fun TimetableScreen(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "Linje",
+                        text = stringResource(R.string.departure_line),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.weight(0.2f)
                     )
                     Text(
-                        text = "Destination",
+                        text = stringResource(R.string.departure_destination),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.weight(0.6f)
                     )
                     Text(
-                        text = "Nästa",
+                        text = stringResource(R.string.departure_next),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.weight(0.2f)
@@ -233,7 +239,7 @@ fun TimetableScreen(
                                 modifier = Modifier.weight(0.6f)
                             )
                             Text(
-                                text = departure.next,
+                                text = formatDepartureTime(departure.minutesUntilDeparture),
                                 modifier = Modifier.weight(0.2f)
                             )
                         }
@@ -268,14 +274,18 @@ private fun LineBadge(departure: Departure, modifier: Modifier = Modifier) {
 private fun parseHexColor(value: String, fallback: Color): Color =
     runCatching { Color(android.graphics.Color.parseColor(value)) }.getOrDefault(fallback)
 
-private fun formatLastUpdated(timestampMillis: Long): String = LAST_UPDATED_FORMATTER
-    .withZone(ZoneId.systemDefault())
-    .format(Instant.ofEpochMilli(timestampMillis))
+@Composable
+private fun formatDepartureTime(minutes: Int): String = when {
+    minutes < 1 -> stringResource(R.string.departure_now)
+    else -> pluralStringResource(R.plurals.departure_minutes, minutes, minutes)
+}
 
-private val LAST_UPDATED_FORMATTER = DateTimeFormatter.ofPattern(
-    "d MMMM HH:mm",
-    Locale.forLanguageTag("sv-SE"),
-)
+private fun formatLastUpdated(timestampMillis: Long, locale: Locale): String {
+    val pattern = DateFormat.getBestDateTimePattern(locale, "dMMMMHm")
+    return DateTimeFormatter.ofPattern(pattern, locale)
+        .withZone(ZoneId.systemDefault())
+        .format(Instant.ofEpochMilli(timestampMillis))
+}
 
 @Preview(device = Devices.TABLET, showBackground = true)
 @Composable
@@ -283,10 +293,10 @@ fun TimetableScreenPreview() {
     NextTramTheme {
         TimetableScreen(
             departures = listOf(
-                Departure("2", "Biskopsgården", "Nu", "C", "#ffdd00", "#006c93","#ffdd00"),
-                Departure("7", "Tynnered", "3 min", "C", "#00435c", "#ffffff", "#00435c"),
-                Departure("6", "Länsmansgården", "8 min", "B","#f89828", "#00435c", "#f89828"),
-                Departure("1", "Östra sjukhuset", "12 min", "C", "#ffffff", "#006c93","#006c93")
+                Departure("2", "Biskopsgården", 0, "C", "#ffdd00", "#006c93","#ffdd00"),
+                Departure("7", "Tynnered", 3, "C", "#00435c", "#ffffff", "#00435c"),
+                Departure("6", "Länsmansgården", 8, "B","#f89828", "#00435c", "#f89828"),
+                Departure("1", "Östra sjukhuset", 12, "C", "#ffffff", "#006c93","#006c93")
             ),
             platforms = listOf("B", "C"),
             stationName = "Axel Dahlströms Torg, Göteborg",
@@ -295,7 +305,7 @@ fun TimetableScreenPreview() {
             onRefresh = {},
             lastUpdated = "6 april 15:30",
             isRefreshing = false,
-            refreshError = null,
+            refreshFailed = false,
         )
     }
 }

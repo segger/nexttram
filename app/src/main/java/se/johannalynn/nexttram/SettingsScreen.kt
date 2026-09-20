@@ -1,5 +1,7 @@
 package se.johannalynn.nexttram
 
+import android.text.format.DateFormat
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,11 +30,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import se.johannalynn.nexttram.ui.theme.NextTramTheme
-import java.util.Locale
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun SettingsScreen(
@@ -50,6 +56,13 @@ fun SettingsScreen(
     modifier: Modifier = Modifier
 ) {
     var editedTime by remember { mutableStateOf<ScheduleTime?>(null) }
+    val context = LocalContext.current
+    val locale = LocalConfiguration.current.locales[0]
+    val is24Hour = DateFormat.is24HourFormat(context)
+    val timeFormatter = remember(locale, is24Hour) {
+        val skeleton = if (is24Hour) "Hm" else "hm"
+        DateTimeFormatter.ofPattern(DateFormat.getBestDateTimePattern(locale, skeleton), locale)
+    }
 
     Column(
         modifier = modifier
@@ -58,7 +71,7 @@ fun SettingsScreen(
     ) {
         Row {
             Text(
-                text = "Inställningar",
+                text = stringResource(R.string.settings_title),
                 style = MaterialTheme.typography.titleMedium,
             )
         }
@@ -68,14 +81,14 @@ fun SettingsScreen(
                 .padding(start = 16.dp, top = 16.dp, end = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text("Dark mode", modifier = Modifier.weight(1f))
+            Text(stringResource(R.string.settings_dark_mode), modifier = Modifier.weight(1f))
             Switch(
                 checked = darkModeEnabled,
                 onCheckedChange = onDarkModeChanged
             )
         }
         ListItem(
-            headlineContent = { Text("Automatisk uppdatering") },
+            headlineContent = { Text(stringResource(R.string.settings_auto_update)) },
             trailingContent = {
                 Switch(
                     checked = autoUpdateSettings.enabled,
@@ -86,18 +99,18 @@ fun SettingsScreen(
         )
         if (autoUpdateSettings.enabled) {
             ListItem(
-                headlineContent = { Text("Från") },
-                trailingContent = { Text(formatTime(autoUpdateSettings.startMinutes)) },
+                headlineContent = { Text(stringResource(R.string.settings_auto_update_from)) },
+                trailingContent = { Text(formatTime(autoUpdateSettings.startMinutes, timeFormatter)) },
                 modifier = Modifier.clickable { editedTime = ScheduleTime.START },
             )
             ListItem(
-                headlineContent = { Text("Till") },
-                trailingContent = { Text(formatTime(autoUpdateSettings.endMinutes)) },
+                headlineContent = { Text(stringResource(R.string.settings_auto_update_to)) },
+                trailingContent = { Text(formatTime(autoUpdateSettings.endMinutes, timeFormatter)) },
                 modifier = Modifier.clickable { editedTime = ScheduleTime.END },
             )
         }
         Text(
-            text = "Hållplats",
+            text = stringResource(R.string.settings_station),
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(top = 24.dp)
         )
@@ -108,7 +121,7 @@ fun SettingsScreen(
         OutlinedTextField(
             value = stationQuery,
             onValueChange = onStationQueryChanged,
-            label = { Text("Sök hållplats") },
+            label = { Text(stringResource(R.string.settings_search_station)) },
             singleLine = true,
             modifier = Modifier
                 .fillMaxWidth()
@@ -122,15 +135,15 @@ fun SettingsScreen(
                     .padding(top = 16.dp)
                     .size(24.dp)
             )
-            is StationSearchUiState.Error -> Text(
-                text = stationSearchState.message,
+            StationSearchUiState.Error -> Text(
+                text = stringResource(R.string.error_search_stations),
                 color = MaterialTheme.colorScheme.error,
                 modifier = Modifier.padding(top = 16.dp)
             )
             is StationSearchUiState.Success -> {
                 if (stationSearchState.stations.isEmpty()) {
                     Text(
-                        text = "Inga hållplatser hittades",
+                        text = stringResource(R.string.settings_no_stations_found),
                         modifier = Modifier.padding(top = 16.dp)
                     )
                 } else {
@@ -153,7 +166,7 @@ fun SettingsScreen(
 
     when (editedTime) {
         ScheduleTime.START -> ScheduleTimePickerDialog(
-            title = "Starttid",
+            titleResId = R.string.settings_start_time,
             initialMinutes = autoUpdateSettings.startMinutes,
             onConfirm = {
                 onAutoUpdateStartChanged(it)
@@ -162,7 +175,7 @@ fun SettingsScreen(
             onDismiss = { editedTime = null },
         )
         ScheduleTime.END -> ScheduleTimePickerDialog(
-            title = "Sluttid",
+            titleResId = R.string.settings_end_time,
             initialMinutes = autoUpdateSettings.endMinutes,
             onConfirm = {
                 onAutoUpdateEndChanged(it)
@@ -177,7 +190,7 @@ fun SettingsScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ScheduleTimePickerDialog(
-    title: String,
+    @StringRes titleResId: Int,
     initialMinutes: Int,
     onConfirm: (Int) -> Unit,
     onDismiss: () -> Unit,
@@ -185,31 +198,28 @@ private fun ScheduleTimePickerDialog(
     val state = rememberTimePickerState(
         initialHour = initialMinutes / 60,
         initialMinute = initialMinutes % 60,
-        is24Hour = true,
+        is24Hour = DateFormat.is24HourFormat(LocalContext.current),
     )
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(title) },
+        title = { Text(stringResource(titleResId)) },
         text = { TimePicker(state = state) },
         confirmButton = {
             TextButton(onClick = { onConfirm(state.hour * 60 + state.minute) }) {
-                Text("Spara")
+                Text(stringResource(R.string.save))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Avbryt")
+                Text(stringResource(R.string.cancel))
             }
         },
     )
 }
 
-private fun formatTime(minutes: Int): String = String.format(
-    Locale.ROOT,
-    "%02d:%02d",
-    minutes / 60,
-    minutes % 60,
+private fun formatTime(minutes: Int, formatter: DateTimeFormatter): String = formatter.format(
+    LocalTime.of(minutes / 60, minutes % 60)
 )
 
 private enum class ScheduleTime { START, END }

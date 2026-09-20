@@ -5,6 +5,7 @@ import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -25,6 +26,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -77,10 +79,10 @@ fun NextTramApp(
                         icon = {
                             Icon(
                                 it.icon,
-                                contentDescription = it.label
+                                contentDescription = stringResource(it.labelResId)
                             )
                         },
-                        label = { Text(it.label) },
+                        label = { Text(stringResource(it.labelResId)) },
                         selected = it == currentDestination,
                         onClick = { currentDestination = it }
                     )
@@ -124,9 +126,9 @@ fun NextTramApp(
 }
 
 enum class AppDestinations(
-    val label: String,
+    @StringRes val labelResId: Int,
     val icon: ImageVector,
 ) {
-    HOME("Hem", Icons.Default.Home),
-    SETTINGS("Inställningar", Icons.Default.Settings),
+    HOME(R.string.navigation_home, Icons.Default.Home),
+    SETTINGS(R.string.navigation_settings, Icons.Default.Settings),
 }

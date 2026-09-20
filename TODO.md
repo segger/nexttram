@@ -10,7 +10,7 @@
 ### Other
 - [ ] Handle secrets
 - [ ] Add tests
-- [ ] Lokalization
+- [x] Localization
 
 ### Build and deploy
 - [ ] Build on github

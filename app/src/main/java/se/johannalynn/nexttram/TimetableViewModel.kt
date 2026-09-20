@@ -19,13 +19,13 @@ import kotlin.math.min
 
 sealed interface TimetableUiState {
     data object Loading : TimetableUiState
-    data class Error(val message: String) : TimetableUiState
+    data object Error : TimetableUiState
     data class Success(
         val departures: List<Departure>,
         val platforms: List<String>,
         val lastUpdatedMillis: Long,
         val isRefreshing: Boolean = false,
-        val refreshError: String? = null,
+        val refreshFailed: Boolean = false,
     ) : TimetableUiState
 }
 
@@ -48,7 +48,7 @@ sealed interface StationSearchUiState {
     data object Idle : StationSearchUiState
     data object Loading : StationSearchUiState
     data class Success(val stations: List<Station>) : StationSearchUiState
-    data class Error(val message: String) : StationSearchUiState
+    data object Error : StationSearchUiState
 }
 
 class TimetableViewModel(application: Application) : AndroidViewModel(application) {
@@ -108,9 +108,9 @@ class TimetableViewModel(application: Application) : AndroidViewModel(applicatio
             _uiState.value = when (currentState) {
                 is TimetableUiState.Success -> currentState.copy(
                     isRefreshing = true,
-                    refreshError = null,
+                    refreshFailed = false,
                 )
-                is TimetableUiState.Error -> currentState
+                TimetableUiState.Error -> currentState
                 TimetableUiState.Loading -> TimetableUiState.Loading
             }
             try {
@@ -128,14 +128,13 @@ class TimetableViewModel(application: Application) : AndroidViewModel(applicatio
                 )
             } catch (error: CancellationException) {
                 throw error
-            } catch (e: Exception) {
-                val message = "Kunde inte uppdatera: ${e.message}"
+            } catch (_: Exception) {
                 _uiState.value = when (val state = _uiState.value) {
                     is TimetableUiState.Success -> state.copy(
                         isRefreshing = false,
-                        refreshError = message,
+                        refreshFailed = true,
                     )
-                    else -> TimetableUiState.Error(message)
+                    else -> TimetableUiState.Error
                 }
             }
         }
@@ -216,10 +215,8 @@ class TimetableViewModel(application: Application) : AndroidViewModel(applicatio
                 )
             } catch (error: CancellationException) {
                 throw error
-            } catch (error: Exception) {
-                _stationSearchState.value = StationSearchUiState.Error(
-                    "Kunde inte söka: ${error.message}"
-                )
+            } catch (_: Exception) {
+                _stationSearchState.value = StationSearchUiState.Error
             }
         }
     }

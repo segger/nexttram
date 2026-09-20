@@ -23,7 +23,7 @@ import java.time.ZonedDateTime
 data class Departure(
     val line: String,
     val destination: String,
-    val next: String,
+    val minutesUntilDeparture: Int,
     val platform: String,
     val backgroundColor: String,
     val foregroundColor: String,
@@ -130,7 +130,7 @@ class TimetableService {
             .map { apiDeparture ->
                 Departure(apiDeparture.serviceJourney.line.shortName,
                     apiDeparture.serviceJourney.direction,
-                    departureTime(apiDeparture.estimatedOtherwisePlannedTime),
+                    minutesUntilDeparture(apiDeparture.estimatedOtherwisePlannedTime),
                     apiDeparture.stopPoint.platform,
                     apiDeparture.serviceJourney.line.backgroundColor,
                     apiDeparture.serviceJourney.line.foregroundColor,
@@ -153,17 +153,10 @@ class TimetableService {
         }
     }
 
-    private fun departureTime(departureTimestamp: String): String {
+    private fun minutesUntilDeparture(departureTimestamp: String): Int {
         val departureTime = ZonedDateTime.parse(departureTimestamp)
         val now = ZonedDateTime.now(departureTime.zone)
-
-        val duration = Duration.between(now, departureTime)
-        val minutes = duration.toMinutes()
-
-        return when {
-            minutes < 1 -> "Nu"
-            else -> "$minutes min"
-        }
+        return Duration.between(now, departureTime).toMinutes().coerceAtLeast(0).toInt()
     }
 
     private fun tokenExpiry(response: TokenResponse): Instant {
