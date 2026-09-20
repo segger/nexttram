@@ -15,7 +15,6 @@ import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.LocalTime
 import java.time.ZonedDateTime
-import kotlin.math.min
 
 sealed interface TimetableUiState {
     data object Loading : TimetableUiState
@@ -33,7 +32,20 @@ data class AutoUpdateSettings(
     val enabled: Boolean,
     val startMinutes: Int,
     val endMinutes: Int,
-)
+) {
+    internal fun nextUpdateAt(now: ZonedDateTime): ZonedDateTime {
+        val nextMinute = now.plusMinutes(1)
+        if (enabled && isActiveAt(now.toLocalTime()) && isActiveAt(nextMinute.toLocalTime())) {
+            return nextMinute
+        }
+        val nextHour = now.plusHours(1)
+        if (!enabled) return nextHour
+        var nextStart = now.withHour(startMinutes / MINUTES_PER_HOUR).withMinute(startMinutes % MINUTES_PER_HOUR)
+            .withSecond(0).withNano(0)
+        if (!nextStart.isAfter(now)) nextStart = nextStart.plusDays(1)
+        return minOf(nextHour, nextStart)
+    }
+}
 
 internal fun AutoUpdateSettings.isActiveAt(time: LocalTime): Boolean {
     val currentMinutes = time.hour * MINUTES_PER_HOUR + time.minute
@@ -90,7 +102,7 @@ class TimetableViewModel(application: Application) : AndroidViewModel(applicatio
     private var departuresJob: Job? = null
     private var searchJob: Job? = null
     private var autoUpdateJob: Job? = null
-    private var nextAutoUpdateAtMillis: Long? = null
+    private var lastDeparturesRequestAt: ZonedDateTime? = null
 
     fun start() {
         if (started) return
@@ -101,8 +113,7 @@ class TimetableViewModel(application: Application) : AndroidViewModel(applicatio
     fun fetchDepartures() {
         if (departuresJob?.isActive == true) return
 
-        val requestStartedAtMillis = System.currentTimeMillis()
-        nextAutoUpdateAtMillis = requestStartedAtMillis + AUTO_UPDATE_INTERVAL_MILLIS
+        lastDeparturesRequestAt = ZonedDateTime.now()
         departuresJob = viewModelScope.launch {
             val currentState = _uiState.value
             _uiState.value = when (currentState) {
@@ -144,31 +155,19 @@ class TimetableViewModel(application: Application) : AndroidViewModel(applicatio
         if (autoUpdateJob?.isActive == true) return
         autoUpdateJob = viewModelScope.launch {
             _autoUpdateSettings.collectLatest { settings ->
-                if (!settings.enabled) return@collectLatest
-
                 while (true) {
                     val now = ZonedDateTime.now()
-                    if (!settings.isActiveAt(now.toLocalTime())) {
-                        delay(settings.millisUntilNextStart(now).nextCheckDelay())
-                        continue
-                    }
-
-                    val nowMillis = System.currentTimeMillis()
-                    val nextUpdateAtMillis = nextAutoUpdateAtMillis
-                    if (nextUpdateAtMillis == null || nextUpdateAtMillis <= nowMillis) {
+                    val nextUpdate = lastDeparturesRequestAt?.let(settings::nextUpdateAt)
+                    if (nextUpdate == null || !now.isBefore(nextUpdate)) {
                         if (departuresJob?.isActive == true) {
-                            nextAutoUpdateAtMillis = nextAutoUpdateAtMillis
-                                ?.nextIntervalAfter(nowMillis)
-                                ?: nowMillis + AUTO_UPDATE_INTERVAL_MILLIS
+                            lastDeparturesRequestAt = now
                         } else {
                             fetchDepartures()
                         }
                         continue
                     }
 
-                    val untilNextUpdate = nextUpdateAtMillis - nowMillis
-                    val untilEnd = settings.millisUntilEnd(now)
-                    delay(min(untilNextUpdate, untilEnd).nextCheckDelay())
+                    delay(Duration.between(now, nextUpdate).toMillis().coerceIn(1L, AUTO_UPDATE_INTERVAL_MILLIS))
                 }
             }
         }
@@ -243,29 +242,6 @@ class TimetableViewModel(application: Application) : AndroidViewModel(applicatio
         _selectedPlatform.value = platform
         preferences.edit().putString(PLATFORM_KEY, platform).apply()
     }
-
-    private fun AutoUpdateSettings.millisUntilNextStart(now: ZonedDateTime): Long {
-        val start = LocalTime.of(startMinutes / MINUTES_PER_HOUR, startMinutes % MINUTES_PER_HOUR)
-        var nextStart = now.with(start).withSecond(0).withNano(0)
-        if (!nextStart.isAfter(now)) nextStart = nextStart.plusDays(1)
-        return Duration.between(now, nextStart).toMillis().coerceAtLeast(1L)
-    }
-
-    private fun AutoUpdateSettings.millisUntilEnd(now: ZonedDateTime): Long {
-        if (startMinutes == endMinutes) return AUTO_UPDATE_INTERVAL_MILLIS
-
-        val end = LocalTime.of(endMinutes / MINUTES_PER_HOUR, endMinutes % MINUTES_PER_HOUR)
-        var nextEnd = now.with(end).withSecond(0).withNano(0)
-        if (!nextEnd.isAfter(now)) nextEnd = nextEnd.plusDays(1)
-        return Duration.between(now, nextEnd).toMillis().coerceAtLeast(1L)
-    }
-
-    private fun Long.nextIntervalAfter(nowMillis: Long): Long {
-        val intervals = ((nowMillis - this) / AUTO_UPDATE_INTERVAL_MILLIS) + 1
-        return this + intervals * AUTO_UPDATE_INTERVAL_MILLIS
-    }
-
-    private fun Long.nextCheckDelay(): Long = coerceIn(1L, AUTO_UPDATE_INTERVAL_MILLIS)
 
     private companion object {
         const val PREFERENCES_NAME = "next_tram_preferences"

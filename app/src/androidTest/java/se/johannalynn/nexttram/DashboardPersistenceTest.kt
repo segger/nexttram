@@ -17,14 +17,20 @@ import org.junit.Test
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneId
+import java.util.concurrent.atomic.AtomicInteger
 
 class DashboardPersistenceTest {
     @get:Rule val compose = createComposeRule()
     private val application = ApplicationProvider.getApplicationContext<Application>()
     private val preferences = application.getSharedPreferences("dashboard-test", Context.MODE_PRIVATE)
-    private val service = WeatherService(HttpClient(MockEngine { respond("Offline", HttpStatusCode.ServiceUnavailable) }))
+    private val weatherRequests = AtomicInteger()
+    private val service = WeatherService(HttpClient(MockEngine {
+        weatherRequests.incrementAndGet()
+        respond("Offline", HttpStatusCode.ServiceUnavailable)
+    }))
     private val clock = MutableClock(Instant.parse("2026-09-20T10:30:00Z"))
     private val models = mutableListOf<DashboardViewModel>()
+    private val settings = AutoUpdateSettings(enabled = true, startMinutes = 6 * 60, endMinutes = 9 * 60)
 
     @After
     fun cleanUp() {
@@ -66,7 +72,7 @@ class DashboardPersistenceTest {
             model = model()
             model.saveRememberItem(null, "Matlåda")
             model.checkRememberItem(model.rememberList.value.items.single().id, true)
-            model.start()
+            model.start(settings)
             clock.current = clock.current.plusSeconds(1)
         }
         compose.waitUntil(5_000) { !model.rememberList.value.items.single().checked }
@@ -95,11 +101,36 @@ class DashboardPersistenceTest {
             )).commit()
             model = model()
             model.saveRememberItem(null, "Matlåda")
-            model.start()
+            model.start(settings)
         }
         compose.waitUntil(5_000) { model.weather.value.refreshFailed }
         assertEquals(1, model.weather.value.periods.size)
         assertEquals("Matlåda", model.rememberList.value.items.single().name)
+    }
+
+    @Test
+    fun failedHourlyChecksAllowImmediateManualAndResumeChecks() {
+        lateinit var model: DashboardViewModel
+        val disabled = settings.copy(enabled = false)
+        compose.runOnIdle {
+            preferences.edit().clear().commit()
+            model = model()
+            model.start(disabled)
+        }
+        compose.waitUntil(5_000) {
+            weatherRequests.get() == 1 && model.weather.value.refreshFailed && !model.weather.value.isLoading
+        }
+        compose.runOnIdle { model.refreshWeather() }
+        compose.waitUntil(5_000) {
+            weatherRequests.get() == 2 && !model.weather.value.isLoading
+        }
+        compose.runOnIdle {
+            model.stop()
+            model.start(disabled)
+        }
+        compose.waitUntil(5_000) {
+            weatherRequests.get() == 3 && !model.weather.value.isLoading
+        }
     }
 
     private fun model() = DashboardViewModel(application, preferences, service, clock).also { models += it }

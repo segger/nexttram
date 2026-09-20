@@ -64,8 +64,8 @@ fun NextTramApp(
     val weather by dashboardViewModel.weather.collectAsStateWithLifecycle()
     val rememberList by dashboardViewModel.rememberList.collectAsStateWithLifecycle()
 
-    LifecycleStartEffect(dashboardViewModel) {
-        dashboardViewModel.start()
+    LifecycleStartEffect(dashboardViewModel, autoUpdateSettings) {
+        dashboardViewModel.start(autoUpdateSettings)
         onStopOrDispose { dashboardViewModel.stop() }
     }
 

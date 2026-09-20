@@ -99,7 +99,7 @@ fun SettingsScreen(
                 )
             }
             ListItem(
-                headlineContent = { Text(stringResource(R.string.settings_auto_update)) },
+                headlineContent = { Text(stringResource(R.string.settings_auto_update_minute_interval)) },
                 trailingContent = {
                     Switch(
                         checked = autoUpdateSettings.enabled,

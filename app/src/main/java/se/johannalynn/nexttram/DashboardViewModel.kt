@@ -50,17 +50,25 @@ class DashboardViewModel internal constructor(
     val rememberList = _rememberList.asStateFlow()
     private var ticker: Job? = null
     private var weatherJob: Job? = null
-    private var retryAtMillis = 0L
+    private var lastWeatherCheck = ZonedDateTime.now(clock)
 
-    fun start() {
+    fun start(settings: AutoUpdateSettings) {
         if (ticker?.isActive == true) return
         ticker = viewModelScope.launch {
+            refreshWeather()
             while (true) {
                 updateDateAndPeriods()
-                refreshWeather()
                 val now = ZonedDateTime.now(clock)
+                if (!now.isBefore(settings.nextUpdateAt(lastWeatherCheck))) {
+                    refreshWeather()
+                }
+                val nextWeatherCheck = settings.nextUpdateAt(lastWeatherCheck).toInstant().toEpochMilli()
                 val midnight = now.toLocalDate().plusDays(1).atStartOfDay(now.zone)
-                delay(Duration.between(now, midnight).toMillis().coerceIn(1L, 60_000L))
+                delay(minOf(
+                    Duration.between(now, midnight).toMillis(),
+                    nextWeatherCheck - clock.millis(),
+                    60_000L,
+                ).coerceAtLeast(1L))
             }
         }
     }
@@ -74,7 +82,8 @@ class DashboardViewModel internal constructor(
     }
 
     fun refreshWeather() {
-        if (weatherJob?.isActive == true || clock.millis() < retryAtMillis) return
+        lastWeatherCheck = ZonedDateTime.now(clock)
+        if (weatherJob?.isActive == true) return
         if (cachedWeather?.expiresAtMillis?.let { it > clock.millis() } == true) return
         weatherJob = viewModelScope.launch {
             _weather.value = _weather.value.copy(isLoading = true)
@@ -87,8 +96,7 @@ class DashboardViewModel internal constructor(
             } catch (error: CancellationException) {
                 throw error
             } catch (_: Exception) {
-                // Avoid retrying on every departure refresh or repeated taps while offline.
-                retryAtMillis = clock.millis() + 60_000L
+                lastWeatherCheck = ZonedDateTime.now(clock)
                 _weather.value = _weather.value.copy(isLoading = false, refreshFailed = true)
                 updateDateAndPeriods()
             }
