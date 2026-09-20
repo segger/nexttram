@@ -1,7 +1,7 @@
 ### Features
 - [ ] Auto-update
 
-- [ ] Change station
+- [x] Change station
 
 #### Weather
 * api.met.no (YR)
@@ -17,4 +17,3 @@
 
 ### Publish
 - [] See [Google Play publishing plan](docs/google-play-publishing-plan.md)
-

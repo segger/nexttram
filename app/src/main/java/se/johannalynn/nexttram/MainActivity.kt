@@ -17,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteDefaults
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -48,9 +49,16 @@ fun NextTramApp(
 ) {
     var currentDestination by remember { mutableStateOf(AppDestinations.HOME) }
     var darkModeEnabled by remember { mutableStateOf(false) }
-    var defaultPlatform by remember { mutableStateOf("C") }
 
     val uiState by viewModel.uiState.collectAsState()
+    val selectedStation by viewModel.selectedStation.collectAsState()
+    val selectedPlatform by viewModel.selectedPlatform.collectAsState()
+    val stationQuery by viewModel.stationQuery.collectAsState()
+    val stationSearchState by viewModel.stationSearchState.collectAsState()
+
+    LaunchedEffect(viewModel) {
+        viewModel.start()
+    }
 
     NextTramTheme(darkTheme = darkModeEnabled) {
         val navigationSuiteColors = NavigationSuiteDefaults.colors(
@@ -81,15 +89,20 @@ fun NextTramApp(
                 when (currentDestination) {
                     AppDestinations.HOME -> TimetableScreenWrapper(
                         uiState = uiState,
-                        defaultPlatform = defaultPlatform,
+                        stationName = selectedStation.name,
+                        selectedPlatform = selectedPlatform,
+                        onPlatformSelected = viewModel::selectPlatform,
                         onRefresh = viewModel::fetchDepartures,
                         modifier = Modifier.padding(innerPadding)
                     )
                     AppDestinations.SETTINGS -> SettingsScreen(
                         darkModeEnabled = darkModeEnabled,
                         onDarkModeChanged = { darkModeEnabled = it },
-                        defaultPlatform = defaultPlatform,
-                        onDefaultPlatformChanged = { defaultPlatform = it },
+                        selectedStationName = selectedStation.name,
+                        stationQuery = stationQuery,
+                        stationSearchState = stationSearchState,
+                        onStationQueryChanged = viewModel::onStationQueryChanged,
+                        onStationSelected = viewModel::selectStation,
                         modifier = Modifier.padding(innerPadding)
                     )
                 }

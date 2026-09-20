@@ -10,6 +10,7 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.basicAuth
 import io.ktor.client.request.forms.submitForm
 import io.ktor.client.request.get
+import io.ktor.client.request.parameter
 import io.ktor.http.parameters
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.Serializable
@@ -34,6 +35,11 @@ data class DeparturesResult(
     val platforms: List<String>
 )
 
+data class Station(
+    val gid: String,
+    val name: String,
+)
+
 @Serializable
 data class TokenResponse(
     val access_token: String,
@@ -44,6 +50,16 @@ data class TokenResponse(
 
 @Serializable
 data class DeparturesResponse(val results: List<ApiDeparture> = emptyList())
+
+@Serializable
+data class LocationsResponse(val results: List<ApiLocation> = emptyList())
+
+@Serializable
+data class ApiLocation(
+    val gid: String? = null,
+    val name: String,
+    val locationType: String,
+)
 
 @Serializable
 data class ApiDeparture(val serviceJourney: ServiceJourney, val stopPoint: StopPoint, val estimatedOtherwisePlannedTime: String)
@@ -61,7 +77,6 @@ class TimetableService {
 
     private val BASE_URL = "https://ext-api.vasttrafik.se/pr/v4"
     private val TOKEN_URL = "https://ext-api.vasttrafik.se/token"
-    private val gid = 9021014001200000
     private val CLIENT_ID = BuildConfig.CLIENT_ID
     private val CLIENT_SECRET = BuildConfig.CLIENT_SECRET
 
@@ -105,8 +120,8 @@ class TimetableService {
         }
     }
 
-    suspend fun getDepartures(): DeparturesResult {
-        val response = client.get("$BASE_URL/stop-areas/${gid}/departures").body<DeparturesResponse>()
+    suspend fun getDepartures(stationGid: String): DeparturesResult {
+        val response = client.get("$BASE_URL/stop-areas/$stationGid/departures").body<DeparturesResponse>()
         val platforms = response.results
             .map { departure -> departure.stopPoint.platform }
             .distinct()
@@ -122,6 +137,20 @@ class TimetableService {
                     apiDeparture.serviceJourney.line.borderColor)
         }
         return DeparturesResult(departures, platforms)
+    }
+
+    suspend fun searchStations(query: String): List<Station> {
+        val response = client.get("$BASE_URL/locations/by-text") {
+            parameter("q", query)
+            parameter("types", "stoparea")
+            parameter("limit", 10)
+        }.body<LocationsResponse>()
+
+        return response.results.mapNotNull { location ->
+            location.gid
+                ?.takeIf { location.locationType == "stoparea" }
+                ?.let { gid -> Station(gid, location.name) }
+        }
     }
 
     private fun departureTime(departureTimestamp: String): String {

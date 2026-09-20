@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -42,7 +43,9 @@ import java.util.Locale
 @Composable
 fun TimetableScreenWrapper(
     uiState: TimetableUiState,
-    defaultPlatform: String,
+    stationName: String,
+    selectedPlatform: String,
+    onPlatformSelected: (String) -> Unit,
     onRefresh: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -54,8 +57,29 @@ fun TimetableScreenWrapper(
         }
 
         is TimetableUiState.Error -> {
-            Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(text = uiState.message, color = MaterialTheme.colorScheme.error)
+            Column(
+                modifier = modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+            ) {
+                Text(
+                    text = stationName,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                )
+                Text(
+                    text = uiState.message,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(top = 8.dp),
+                )
+                Button(
+                    onClick = onRefresh,
+                    modifier = Modifier.padding(top = 16.dp),
+                ) {
+                    Text("Försök igen")
+                }
             }
         }
 
@@ -63,7 +87,9 @@ fun TimetableScreenWrapper(
             TimetableScreen(
                 departures = uiState.departures,
                 platforms = uiState.platforms,
-                defaultPlatform = defaultPlatform,
+                stationName = stationName,
+                selectedPlatform = selectedPlatform,
+                onPlatformSelected = onPlatformSelected,
                 onRefresh = onRefresh,
                 lastUpdated = SimpleDateFormat("d MMMM HH:mm", Locale("sv", "SE")).format(Calendar.getInstance().time),
                 modifier = modifier
@@ -78,14 +104,13 @@ fun TimetableScreenWrapper(
 fun TimetableScreen(
     departures: List<Departure>,
     platforms: List<String>,
-    defaultPlatform: String,
+    stationName: String,
+    selectedPlatform: String,
+    onPlatformSelected: (String) -> Unit,
     onRefresh: () -> Unit,
     lastUpdated: String,
     modifier: Modifier = Modifier
 ) {
-    var selectedPlatform by remember(defaultPlatform, platforms) {
-        mutableStateOf(defaultPlatform.takeIf { it in platforms } ?: platforms.firstOrNull() ?: "")
-    }
     var platformMenuExpanded by remember { mutableStateOf(false) }
     val visibleDepartures = departures.filter { departure -> departure.platform == selectedPlatform }
 
@@ -108,7 +133,7 @@ fun TimetableScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Axel Dahlströms torg",
+                        text = stationName,
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold
                     )
@@ -129,7 +154,7 @@ fun TimetableScreen(
                                 DropdownMenuItem(
                                     text = { Text(platform) },
                                     onClick = {
-                                        selectedPlatform = platform
+                                        onPlatformSelected(platform)
                                         platformMenuExpanded = false
                                     }
                                 )
@@ -145,55 +170,61 @@ fun TimetableScreen(
                 )
             }
 
-            // Table Header
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = "Linje",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.weight(0.2f)
-                )
-                Text(
-                    text = "Destination",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.weight(0.6f)
-                )
-                Text(
-                    text = "Nästa",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.weight(0.2f)
-                )
-            }
-            HorizontalDivider()
+            if (departures.isEmpty()) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("Inga kommande avgångar")
+                }
+            } else {
+                // Table Header
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "Linje",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.weight(0.2f)
+                    )
+                    Text(
+                        text = "Destination",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.weight(0.6f)
+                    )
+                    Text(
+                        text = "Nästa",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.weight(0.2f)
+                    )
+                }
+                HorizontalDivider()
 
-            LazyColumn(modifier = Modifier.fillMaxSize()) {
-                items(visibleDepartures) { departure ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Box(modifier = Modifier.weight(0.2f)) {
-                            LineBadge(departure = departure)
+                LazyColumn(modifier = Modifier.fillMaxSize()) {
+                    items(visibleDepartures) { departure ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Box(modifier = Modifier.weight(0.2f)) {
+                                LineBadge(departure = departure)
+                            }
+                            Text(
+                                text = departure.destination,
+                                modifier = Modifier.weight(0.6f)
+                            )
+                            Text(
+                                text = departure.next,
+                                modifier = Modifier.weight(0.2f)
+                            )
                         }
-                        Text(
-                            text = departure.destination,
-                            modifier = Modifier.weight(0.6f)
-                        )
-                        Text(
-                            text = departure.next,
-                            modifier = Modifier.weight(0.2f)
-                        )
+                        HorizontalDivider(modifier = Modifier.padding(start = 8.dp))
                     }
-                    HorizontalDivider(modifier = Modifier.padding(start = 8.dp))
                 }
             }
         }
@@ -235,7 +266,9 @@ fun TimetableScreenPreview() {
                 Departure("1", "Östra sjukhuset", "12 min", "C", "#ffffff", "#006c93","#006c93")
             ),
             platforms = listOf("B", "C"),
-            defaultPlatform = "C",
+            stationName = "Axel Dahlströms Torg, Göteborg",
+            selectedPlatform = "C",
+            onPlatformSelected = {},
             onRefresh = {},
             lastUpdated = "6 april 15:30"
         )
