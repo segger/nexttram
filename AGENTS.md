@@ -7,6 +7,9 @@
 - Avoid long examples unless they are necessary.
 - Just give one option unless asked.
 
+## Track tokens
+- After finishing an implementation, report how many tokens used and which if any skills and MCP were used
+
 ## Local environment
 
 - Sandboxed commands fail in this environment with `bwrap: loopback: Failed RTM_NEWADDR: Operation not permitted`.

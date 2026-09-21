@@ -27,7 +27,11 @@ class DashboardTest {
     private val now = Instant.parse("2026-09-20T06:00:00Z").toEpochMilli()
     private val weather = WeatherUiState(
         periods = WeatherPeriod.entries.map {
-            PeriodForecast(it, listOf(WeatherHour(now, 12.0, "partlycloudy_day", 0.5, 5.0, 10.0)))
+            val gust = if (it == WeatherPeriod.EVENING) null else 10.0
+            PeriodForecast(it, listOf(
+                WeatherHour(now, 10.0, "partlycloudy_day", 0.2, 3.0, gust?.minus(2.0)),
+                WeatherHour(now + 3_600_000, 12.0, "partlycloudy_day", 0.3, 5.0, gust),
+            ))
         },
         updatedAtMillis = now,
     )
@@ -37,12 +41,20 @@ class DashboardTest {
         var items by mutableStateOf(List(40) { RememberItem("$it", "Sak $it") })
         compose.setContent {
             NextTramTheme {
-                DashboardScreen(weather, items, { id, checked ->
-                    items = items.map { if (it.id == id) it.copy(checked = checked) else it }
-                }, {}) { modifier -> TestDepartures(modifier) }
+                Box(Modifier.size(600.dp, 600.dp)) {
+                    DashboardScreen(weather, items, { id, checked ->
+                        items = items.map { if (it.id == id) it.copy(checked = checked) else it }
+                    }, {}) { modifier -> TestDepartures(modifier) }
+                }
             }
         }
-        compose.onNodeWithText("Göteborg – idag").assertIsDisplayed()
+        compose.onNodeWithText("Period").assertIsDisplayed()
+        compose.onNodeWithText("Temp\n(°C)").assertIsDisplayed()
+        compose.onNodeWithText("Nederbörd\n(mm)").assertIsDisplayed()
+        compose.onNodeWithText("Vind\n(m/s)").assertIsDisplayed()
+        compose.onAllNodesWithText("10–12").assertCountEquals(3)
+        compose.onAllNodesWithText("3–5 (10)").assertCountEquals(2)
+        compose.onNodeWithText("3–5 (—)").assertIsDisplayed()
         compose.onNodeWithText("Kom ihåg").assertIsDisplayed()
         compose.onNodeWithText("Axel Dahlströms Torg").assertIsDisplayed()
         compose.onNodeWithText("Sak 0").performClick().assertIsOn()
@@ -51,11 +63,11 @@ class DashboardTest {
         compose.onNodeWithTag("remember-list")
             .performScrollToNode(hasText("Sak 39"))
         compose.onNodeWithText("Sak 39").assertIsDisplayed()
-        compose.onNodeWithText("Göteborg – idag").assertIsDisplayed()
+        compose.onNodeWithText("Period").assertIsDisplayed()
         compose.onNodeWithText("Axel Dahlströms Torg").assertIsDisplayed()
         compose.onNodeWithTag("departures-list")
             .performScrollToNode(hasText("Destination 49"))
-        compose.onNodeWithText("Göteborg – idag").assertIsDisplayed()
+        compose.onNodeWithText("Period").assertIsDisplayed()
         compose.onNodeWithText("Kom ihåg").assertIsDisplayed()
     }
 

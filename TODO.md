@@ -3,7 +3,7 @@
 - [x] Change station
 - [x] Weather
   * Use api.met.no (YR)
-  * [ ] UI changes
+  * [x] UI changes
 - [x] Remember list
   * [ ] Set date (recurring)
 
